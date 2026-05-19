@@ -5,10 +5,8 @@ on:
     branches: [ main, master ]
     tags:
       - 'v*'
-
   pull_request:
     branches: [ main, master ]
-
   workflow_dispatch:
 
 jobs:
@@ -16,7 +14,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -32,17 +29,9 @@ jobs:
         pip install pyinstaller==5.13.2
 
     - name: Build EXE with PyInstaller
+      shell: cmd
       run: |
-        pyinstaller ^
-        --onefile ^
-        --windowed ^
-        --name "LawOfficeSystem" ^
-        --add-data "pages;pages" ^
-        --hidden-import PyQt5.QtPrintSupport ^
-        --hidden-import PyQt5.QtSvg ^
-        --hidden-import sqlite3 ^
-        --exclude-module multiprocessing ^
-        main.py
+        pyinstaller --onefile --windowed --name "LawOfficeSystem" --add-data "pages;pages" --hidden-import PyQt5.QtPrintSupport --hidden-import PyQt5.QtSvg --hidden-import sqlite3 --exclude-module multiprocessing main.py
 
     - name: Prepare Portable Folder
       shell: powershell
@@ -50,32 +39,13 @@ jobs:
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable"
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Archive"
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Backups"
-
         Copy-Item "dist\LawOfficeSystem.exe" "LawOfficeSystem_Portable\" -Force
-
-        if (Test-Path "INSTALL_WINDOWS7.txt") {
-          Copy-Item "INSTALL_WINDOWS7.txt" "LawOfficeSystem_Portable\" -Force
-        }
-
-        if (Test-Path "README.md") {
-          Copy-Item "README.md" "LawOfficeSystem_Portable\" -Force
-        }
-
-        if (Test-Path "law_office.db") {
-          Copy-Item "law_office.db" "LawOfficeSystem_Portable\" -Force
-        }
+        Copy-Item "INSTALL_WINDOWS7.txt" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
+        Copy-Item "README.md" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
+        Copy-Item "law_office.db" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: LawOfficeSystem_Portable_Windows
         path: LawOfficeSystem_Portable/
-
-    - name: Create Release
-      if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v2
-      with:
-        files: |
-          LawOfficeSystem_Portable/LawOfficeSystem.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
