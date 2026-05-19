@@ -28,10 +28,10 @@ jobs:
         pip install -r requirements.txt
         pip install pyinstaller==5.13.2
 
-    - name: Build EXE with PyInstaller
+    - name: Build EXE with PyInstaller ONEDIR
       shell: cmd
       run: |
-        pyinstaller --onefile --windowed --name "LawOfficeSystem" --add-data "pages;pages" --hidden-import PyQt5.QtPrintSupport --hidden-import PyQt5.QtSvg --hidden-import sqlite3 --exclude-module multiprocessing main.py
+        pyinstaller --onedir --windowed --name "LawOfficeSystem" --add-data "pages;pages" --hidden-import PyQt5.QtPrintSupport --hidden-import PyQt5.QtSvg --hidden-import sqlite3 --exclude-module multiprocessing main.py
 
     - name: Prepare Portable Folder
       shell: powershell
@@ -39,7 +39,8 @@ jobs:
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable"
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Archive"
         New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Backups"
-        Copy-Item "dist\LawOfficeSystem.exe" "LawOfficeSystem_Portable\" -Force
+
+        Copy-Item "dist\LawOfficeSystem\*" "LawOfficeSystem_Portable\" -Recurse -Force
         Copy-Item "INSTALL_WINDOWS7.txt" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
         Copy-Item "README.md" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
         Copy-Item "law_office.db" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
@@ -47,5 +48,5 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: LawOfficeSystem_Portable_Windows
+        name: LawOfficeSystem_Portable_Windows_ONEDIR
         path: LawOfficeSystem_Portable/
