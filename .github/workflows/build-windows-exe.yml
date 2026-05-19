@@ -5,8 +5,10 @@ on:
     branches: [ main, master ]
     tags:
       - 'v*'
+
   pull_request:
     branches: [ main, master ]
+
   workflow_dispatch:
 
 jobs:
@@ -14,10 +16,12 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
     - name: Set up Python 3.8
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.8'
 
@@ -25,30 +29,41 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pyinstaller
 
     - name: Build EXE with PyInstaller
       run: |
         pyinstaller --onefile --windowed --name "LawOfficeSystem" --add-data "pages;pages" --hidden-import PyQt5.QtPrintSupport --hidden-import PyQt5.QtSvg --hidden-import sqlite3 main.py
 
     - name: Prepare Portable Folder
+      shell: powershell
       run: |
         mkdir LawOfficeSystem_Portable
         move dist\LawOfficeSystem.exe LawOfficeSystem_Portable\
         mkdir LawOfficeSystem_Portable\Archive
         mkdir LawOfficeSystem_Portable\Backups
-        if (Test-Path README_تشغيل.txt) { copy README_تشغيل.txt LawOfficeSystem_Portable\ }
-        if (Test-Path INSTALL_WINDOWS7.txt) { copy INSTALL_WINDOWS7.txt LawOfficeSystem_Portable\ }
-        if (Test-Path law_office.db) { copy law_office.db LawOfficeSystem_Portable\ }
+
+        if (Test-Path README_تشغيل.txt) {
+          copy README_تشغيل.txt LawOfficeSystem_Portable\
+        }
+
+        if (Test-Path INSTALL_WINDOWS7.txt) {
+          copy INSTALL_WINDOWS7.txt LawOfficeSystem_Portable\
+        }
+
+        if (Test-Path law_office.db) {
+          copy law_office.db LawOfficeSystem_Portable\
+        }
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: LawOfficeSystem_Portable_Windows
         path: LawOfficeSystem_Portable/
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: |
           LawOfficeSystem_Portable/LawOfficeSystem.exe
