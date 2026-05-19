@@ -5,10 +5,8 @@ on:
     branches: [ main, master ]
     tags:
       - 'v*'
-
   pull_request:
     branches: [ main, master ]
-
   workflow_dispatch:
 
 jobs:
@@ -16,7 +14,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -38,22 +35,14 @@ jobs:
     - name: Prepare Portable Folder
       shell: powershell
       run: |
-        mkdir LawOfficeSystem_Portable
-        move dist\LawOfficeSystem.exe LawOfficeSystem_Portable\
-        mkdir LawOfficeSystem_Portable\Archive
-        mkdir LawOfficeSystem_Portable\Backups
+        New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable"
+        New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Archive"
+        New-Item -ItemType Directory -Force -Path "LawOfficeSystem_Portable\Backups"
 
-        if (Test-Path README_تشغيل.txt) {
-          copy README_تشغيل.txt LawOfficeSystem_Portable\
-        }
-
-        if (Test-Path INSTALL_WINDOWS7.txt) {
-          copy INSTALL_WINDOWS7.txt LawOfficeSystem_Portable\
-        }
-
-        if (Test-Path law_office.db) {
-          copy law_office.db LawOfficeSystem_Portable\
-        }
+        Copy-Item "dist\LawOfficeSystem.exe" "LawOfficeSystem_Portable\" -Force
+        Copy-Item "INSTALL_WINDOWS7.txt" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
+        Copy-Item "README.md" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
+        Copy-Item "law_office.db" "LawOfficeSystem_Portable\" -Force -ErrorAction SilentlyContinue
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
